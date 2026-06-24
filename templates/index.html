@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishShield AI - Phishing URL Detector</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="stars-container"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i data-lucide="shield-alert" class="icon-pulse"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>PhishShield <span>AI</span></h1>
+                    <span class="sub-logo">Real-Time Threat Classifier</span>
+                </div>
+            </div>
+            <div class="system-status">
+                <span class="status-indicator online"></span>
+                <span class="status-label">AI ENGINE ONLINE</span>
+            </div>
+        </header>
+
+        <!-- Dashboard Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Side: Scanner and History -->
+            <div class="dashboard-column col-left">
+                <!-- URL Scan Card -->
+                <section class="dashboard-card scan-card">
+                    <div class="card-header">
+                        <i data-lucide="search" class="card-icon"></i>
+                        <h2>URL Threat Scanner</h2>
+                    </div>
+                    <p class="card-description">Analyze any URL using our optimized machine learning model to detect phishing features and assess risk instantly.</p>
+                    
+                    <form id="scan-form" class="scan-form">
+                        <div class="input-wrapper">
+                            <i data-lucide="globe" class="input-icon"></i>
+                            <input type="text" id="url-input" placeholder="Enter URL to analyze (e.g. secure-login-paypal.com)..." required autocomplete="off">
+                            <button type="submit" class="btn-scan" id="btn-scan">
+                                <span class="btn-text">Analyze URL</span>
+                                <i data-lucide="shield-check" class="btn-icon"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Scanning Loader -->
+                    <div id="scan-loader" class="scan-loader hidden">
+                        <div class="scanner-line"></div>
+                        <div class="loader-content">
+                            <div class="spinner"></div>
+                            <p>Extracting lexical features & running ML inference...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- History Log Card -->
+                <section class="dashboard-card history-card">
+                    <div class="card-header">
+                        <i data-lucide="history" class="card-icon"></i>
+                        <h2>Scan History</h2>
+                        <button id="clear-history" class="btn-clear-history">Clear</button>
+                    </div>
+                    <div class="history-table-container">
+                        <table id="history-table" class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Analyzed URL</th>
+                                    <th>Risk Score</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-list">
+                                <tr class="empty-state">
+                                    <td colspan="4">No URLs analyzed in this session yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Side: Results and Playground -->
+            <div class="dashboard-column col-right">
+                
+                <!-- Welcome/Initial State -->
+                <div id="results-placeholder" class="results-placeholder">
+                    <i data-lucide="shield" class="placeholder-icon"></i>
+                    <h3>Ready for Analysis</h3>
+                    <p>Enter a URL on the left panel to trigger features extraction, real-time threat detection, and risk scoring analysis.</p>
+                </div>
+
+                <!-- Analysis Results Panel -->
+                <div id="results-panel" class="results-panel hidden">
+                    <!-- Overall Score & Rating -->
+                    <section class="dashboard-card results-summary-card">
+                        <div class="results-summary-layout">
+                            <div class="gauge-container">
+                                <svg class="gauge-svg" viewBox="0 0 100 100">
+                                    <circle class="gauge-bg" cx="50" cy="50" r="42"></circle>
+                                    <circle id="gauge-progress" class="gauge-progress" cx="50" cy="50" r="42"></circle>
+                                </svg>
+                                <div class="gauge-center">
+                                    <span id="risk-percentage" class="risk-value">0%</span>
+                                    <span class="risk-label">RISK SCORE</span>
+                                </div>
+                            </div>
+                            <div class="verdict-container">
+                                <span class="verdict-sub">ANALYSIS VERDICT</span>
+                                <h3 id="verdict-title" class="verdict-title">SECURE</h3>
+                                <p id="verdict-description" class="verdict-desc">This URL displays normal structural and lexical characteristics. No significant phishing indicators detected.</p>
+                                <div class="verdict-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-label">Model Confidence</span>
+                                        <span id="model-confidence" class="meta-value">99.2%</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">Inference Time</span>
+                                        <span id="inference-time" class="meta-value">4.2ms</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Feature Breakdown List -->
+                    <section class="dashboard-card heuristics-card">
+                        <div class="card-header">
+                            <i data-lucide="list-checks" class="card-icon"></i>
+                            <h2>Feature Insights & Heuristics</h2>
+                        </div>
+                        <p class="card-description">Extracted lexical and structural flags from the URL domain, path, and security status:</p>
+                        <div id="features-breakdown" class="features-breakdown-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </section>
+
+                    <!-- Interactive ML Model Playground -->
+                    <section class="dashboard-card playground-card">
+                        <div class="card-header">
+                            <i data-lucide="sliders" class="card-icon"></i>
+                            <h2>Model Feature Playground</h2>
+                            <span class="badge">Live Test</span>
+                        </div>
+                        <p class="card-description">Manually toggle or adjust URL features to see how the trained Random Forest classifier updates the risk score instantly.</p>
+                        
+                        <div class="playground-layout">
+                            <div class="playground-controls">
+                                <div class="control-group">
+                                    <h3>Toggle Boolean Parameters</h3>
+                                    <div class="toggles-grid">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pg-is_https">
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label"><i data-lucide="lock" class="sm-icon"></i> HTTPS Protocol</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pg-have_ip">
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label"><i data-lucide="binary" class="sm-icon"></i> IP Address Hostname</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pg-have_at">
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label"><i data-lucide="at-sign" class="sm-icon"></i> Contains '@' Symbol</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pg-prefix_suffix">
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label"><i data-lucide="minus" class="sm-icon"></i> Domain Hyphen ('-')</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pg-shortening_service">
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label"><i data-lucide="shrink" class="sm-icon"></i> Shortened Link</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pg-suspicious_words">
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label"><i data-lucide="alert-triangle" class="sm-icon"></i> Suspicious Words</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="control-group">
+                                    <h3>Adjust Numerical Parameters</h3>
+                                    <div class="sliders-grid">
+                                        <div class="slider-item">
+                                            <div class="slider-info">
+                                                <span class="slider-name">URL Length</span>
+                                                <span id="val-url_length" class="slider-value">40</span>
+                                            </div>
+                                            <input type="range" id="pg-url_length" min="10" max="300" value="40">
+                                        </div>
+                                        <div class="slider-item">
+                                            <div class="slider-info">
+                                                <span class="slider-name">Hostname Length</span>
+                                                <span id="val-hostname_length" class="slider-value">15</span>
+                                            </div>
+                                            <input type="range" id="pg-hostname_length" min="5" max="100" value="15">
+                                        </div>
+                                        <div class="slider-item">
+                                            <div class="slider-info">
+                                                <span class="slider-name">Dots in Domain</span>
+                                                <span id="val-nb_dots" class="slider-value">1</span>
+                                            </div>
+                                            <input type="range" id="pg-nb_dots" min="0" max="10" value="1">
+                                        </div>
+                                        <div class="slider-item">
+                                            <div class="slider-info">
+                                                <span class="slider-name">Slashes in URL</span>
+                                                <span id="val-nb_slashes" class="slider-value">3</span>
+                                            </div>
+                                            <input type="range" id="pg-nb_slashes" min="0" max="15" value="3">
+                                        </div>
+                                        <div class="slider-item">
+                                            <div class="slider-info">
+                                                <span class="slider-name">Digits in URL</span>
+                                                <span id="val-nb_digits" class="slider-value">0</span>
+                                            </div>
+                                            <input type="range" id="pg-nb_digits" min="0" max="100" value="0">
+                                        </div>
+                                        <!-- Hidden columns generated by feature extractor but required by model -->
+                                        <input type="hidden" id="pg-nb_hyphens" value="0">
+                                        <input type="hidden" id="pg-nb_question" value="0">
+                                        <input type="hidden" id="pg-nb_equal" value="0">
+                                        <input type="hidden" id="pg-nb_letters" value="35">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="playground-result-container">
+                                <div class="pg-gauge">
+                                    <svg class="gauge-svg-sm" viewBox="0 0 100 100">
+                                        <circle class="gauge-bg" cx="50" cy="50" r="42"></circle>
+                                        <circle id="pg-gauge-progress" class="gauge-progress" cx="50" cy="50" r="42"></circle>
+                                    </svg>
+                                    <div class="pg-gauge-center">
+                                        <span id="pg-risk-percentage" class="pg-risk-value">0%</span>
+                                    </div>
+                                </div>
+                                <span class="pg-verdict-label">PLAYGROUND RISK SCORE</span>
+                                <div id="pg-risk-badge" class="pg-risk-badge safe">LOW RISK</div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+        </main>
+        <footer class="app-footer">
+            <p> " Harnessing Machine Learning to Detect and Prevent Phishing Attacks in Real Time 👨🏻‍💻❤️ "</p>
+        </footer>
+    </div>
+
+    <!-- Script loading -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
